@@ -1,5 +1,11 @@
-This is a simple set of Python scripts for queueing up emails to be sent later.
-It uses the SMTP protocol.
+This is a simple set of Python (3.3) scripts for queueing up emails to be sent
+later. It uses the SMTP protocol, which means you can use it with services like
+Gmail.
+
+To 'install', simply download configure_account.py, configure_program.py, and
+emailsched.py. You'll need to have Python 3 installed for it to work. I've only
+tested it on Windows 7. At a guess, I'd say it'll run just fine on other
+versions of Windows, but I don't know about Linux, OSX or anything else.
 
 Run configure_account.py to enter your email account details.
 Run configure_program.py to choose program settings and create folders.
