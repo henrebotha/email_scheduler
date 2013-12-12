@@ -1,3 +1,5 @@
+import os
+
 while True:
     try:
         debug = int(input("Type 1 if you want debug messages, or 0 otherwise: "))
@@ -28,3 +30,6 @@ with open("settings_program.cfg", "w") as f:
     f.write("maildir = " + str(maildir) + "\n")
     f.write("archdir = " + str(archdir) + "\n")
     f.write("update = " + str(update) + "\n")
+
+os.makedirs(maildir, exist_ok=True)
+os.makedirs(archdir, exist_ok=True)
