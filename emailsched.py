@@ -235,6 +235,18 @@ def test_password(password):
 #MAIN LOOP
 #-------------------------------------------------------------------------------
 
+try:
+    with open("settings_program.cfg"):
+        pass
+except IOError:
+    configure_program()
+
+try:
+    with open("settings_account.cfg"):
+        pass
+except IOError:
+    configure_account()
+
 load_program_settings()
 load_account_settings()
 display_settings()
