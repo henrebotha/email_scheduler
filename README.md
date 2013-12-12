@@ -15,21 +15,22 @@ frequency (which is in seconds, btw) - so keep that value realistic.
 
 Emails are simple plaintext files (any extension) with the following structure:
 
-`year, month, day, hour, minute
-from address
-to address
-subject
-body`
+    year, month, day, hour, minute
+    from address
+    to address
+    subject
+    body
 
 For example:
-`2013, 12, 11, 22, 11
-henrebotha@gmail.com
-bob@microsoft.com
-Re: butts
-Butts are funny! LOL
 
-Regards,
-H`
+    2013, 12, 11, 22, 11
+    henrebotha@gmail.com
+    bob@microsoft.com
+    Re: butts
+    Butts are funny! LOL
+    
+    Regards,
+    H
 
 Everything after the subject line is considered part of the body, so feel free
 to mix in line breaks and whatever else.
