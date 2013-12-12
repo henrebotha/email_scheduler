@@ -1,7 +1,7 @@
 #current issues:
 
-#any mail will be sent late by up to UPDATE_FREQUENCY seconds. So keep this
-#value realistic. UPDATE_FREQUENCY = 3600, for instance, will make your mails
+#any mail will be sent late by up to update_frequency seconds. So keep this
+#value realistic. update_frequency = 3600, for instance, will make your mails
 #send up to an hour late. 
 
 import smtplib #for sending mail
@@ -10,25 +10,21 @@ import datetime #for scheduling dates
 import os #for reading mails
 import getpass
 
-UPDATE_FREQUENCY = 60 #in seconds
-MAILDIR = ".\\emails"
-ARCHDIR = ".\\archive"
-
 mail = {} #key: filename; value: tuple: datetime, from, to, subject, body
 
 def add_mail():
     '''scan emails folder for new/updated emails'''
     print("Adding mail...")
-    for fn in os.listdir(MAILDIR):
-        with open(MAILDIR + "\\" + fn, "r") as f:
+    for fn in os.listdir(maildir):
+        with open(maildir + "\\" + fn, "r") as f:
             mail[fn] = (get_date(f.readline()), f.readline().strip(),
                 f.readline().strip(), f.readline().strip(), f.read())
     print(str(len(mail)) + " mail(s) queued")
 
 def archive_mail(fn):
-    '''move sent mails to ARCHDIR'''
-    path_src = str(MAILDIR + "\\" + fn)
-    path_dest = str(ARCHDIR + "\\" + fn)
+    '''move sent mails to archdir'''
+    path_src = str(maildir + "\\" + fn)
+    path_dest = str(archdir + "\\" + fn)
     try:
         os.rename(path_src, path_dest)
     except FileExistsError:
@@ -43,14 +39,14 @@ def archive_mail(fn):
                 fna = fna[0]
             else:
                 fna = fna[0] + "." + fna[1]
-            path_dest = str(ARCHDIR + "\\" + fna)
+            path_dest = str(archdir + "\\" + fna)
             try:
                 os.rename(path_src, path_dest)
                 break
             except FileExistsError:
                 continue
         else:
-            path_dest = str(ARCHDIR + "\\" + fn)
+            path_dest = str(archdir + "\\" + fn)
             os.remove(path_dest)
             os.rename(path_src, path_dest)
 
@@ -70,7 +66,7 @@ def clear_old_mail():
     '''remove queued mails that no longer point to a valid file'''
     del_list = []
     for fn in mail:
-        if fn not in os.listdir(MAILDIR):
+        if fn not in os.listdir(maildir):
             del_list.append(fn)
     for fn in del_list:
         del mail[fn]
@@ -96,14 +92,14 @@ def get_password():
 
 def load_account_settings():
     settings = []
-    with open("account_settings.cfg", "r") as f:
+    with open("settings_account.cfg", "r") as f:
         for line in f:
             settings.append(line.strip().split(" = ")[1])
     return settings
 
 def load_program_settings():
     settings = []
-    with open("program_settings.cfg", "r") as f:
+    with open("settings_program.cfg", "r") as f:
         for line in f:
             settings.append(line.strip().split(" = ")[1])
     return settings
@@ -135,14 +131,16 @@ port = int(account_settings[2])
 
 program_settings = load_program_settings()
 debug = int(program_settings[0])
-MAILDIR = program_settings[1]
-ARCHDIR = program_settings[2]
-UPDATE_FREQUENCY = int(program_settings[3])
+maildir = program_settings[1]
+archdir = program_settings[2]
+update_frequency = int(program_settings[3])
 
-settings = [user, host, port, debug, MAILDIR, ARCHDIR, UPDATE_FREQUENCY]
+settings_display = [("User", user), ("Host", host), ("Port", port),
+("Debug messages", "on" if debug == 1 else "off"), ("Email directory", maildir),
+("Archive directory", archdir), ("Update frequency", update_frequency)]
 
-for i in settings:
-    print(str(i))
+for i in settings_display:
+    print("{0:20}{1}".format(str(i[0]), str(i[1])))
 
 while True:
     password = get_password()
@@ -157,4 +155,4 @@ while True:
     add_mail()
     clear_old_mail()
     check_schedule()
-    time.sleep(UPDATE_FREQUENCY)
+    time.sleep(update_frequency)
