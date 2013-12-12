@@ -71,6 +71,84 @@ def clear_old_mail():
     for fn in del_list:
         del mail[fn]
 
+def configure_account():
+    user = input("Please enter your email account username: ")
+    
+    host = input("Please enter your email host address: ")
+    
+    while True:
+        try:
+            port = int(input("Please enter the email host port: "))
+            break
+        except:
+            print("Invalid input.")
+    
+    with open("settings_account.cfg", "w") as f:
+        f.write("user = " + user + "\n")
+        f.write("host = " + host + "\n")
+        f.write("port = " + str(port) + "\n")
+
+def configure_program():
+    while True:
+        try:
+            debug = int(input("Type 1 if you want debug messages, or 0 otherwise: "))
+            if debug != 0 and debug != 1:
+                print("Invalid input.")
+                continue
+            break
+        except:
+            print("Invalid input.")
+    
+    maildir = input("Please enter path to mail (leave blank for default): ")
+    if maildir == "":
+        maildir = ".\\emails"
+    
+    archdir = input("Please enter path to archive (leave blank for default): ")
+    if archdir == "":
+        archdir = ".\\archive"
+    
+    while True:
+        try:
+            update = int(input("Please enter update frequency in seconds: "))
+            break
+        except:
+            print("Invalid input.")
+    
+    with open("settings_program.cfg", "w") as f:
+        f.write("debug = " + str(debug) + "\n")
+        f.write("maildir = " + str(maildir) + "\n")
+        f.write("archdir = " + str(archdir) + "\n")
+        f.write("update = " + str(update) + "\n")
+    
+    os.makedirs(maildir, exist_ok=True)
+    os.makedirs(archdir, exist_ok=True)
+
+def display_settings():
+    settings_display = [("User", user), ("Host", host), ("Port", port),
+    ("Debug messages", "on" if debug == 1 else "off"),
+    ("Email directory", maildir), ("Archive directory", archdir),
+    ("Update frequency", update_frequency)]
+
+    for i in settings_display:
+        print("{0:20}{1}".format(str(i[0]), str(i[1])))
+    print()
+
+def email_scheduler():
+    while True:
+        password = get_password()
+        try:
+            test_password(password)
+            print("Password accepted.")
+            break
+        except smtplib.SMTPAuthenticationError:
+            print("Invalid password.")
+    
+    while True:
+        add_mail()
+        clear_old_mail()
+        check_schedule()
+        time.sleep(update_frequency)
+
 def format_mail(mail_raw):
     '''convert mail data into format suitable for sending'''
     msg = "From: " + mail_raw[1] + "\n"
@@ -91,18 +169,51 @@ def get_password():
     return password
 
 def load_account_settings():
+    global user, host, port
     settings = []
     with open("settings_account.cfg", "r") as f:
         for line in f:
             settings.append(line.strip().split(" = ")[1])
-    return settings
+    user = settings[0]
+    host = settings[1]
+    port = int(settings[2])
 
 def load_program_settings():
+    global debug, maildir, archdir, update_frequency
     settings = []
     with open("settings_program.cfg", "r") as f:
         for line in f:
             settings.append(line.strip().split(" = ")[1])
-    return settings
+    debug = int(settings[0])
+    maildir = settings[1]
+    archdir = settings[2]
+    update_frequency = int(settings[3])
+
+def main_menu():
+    print("1. Run email scheduler")
+    print("2. Configure email account settings")
+    print("3. Configure program settings\n")
+    while True:
+        try:
+            choice = int(input("Please enter your choice: "))
+        except:
+            choice = 0
+        print()
+        if choice == 1:
+            email_scheduler()
+            break
+        elif choice == 2:
+            configure_account()
+            load_account_settings()
+            display_settings()
+            break
+        elif choice == 3:
+            configure_program()
+            load_program_settings()
+            display_settings()
+            break
+        else:
+            print("Invalid input.")
 
 def send_mail(to_send):
     '''log in and send messages'''
@@ -124,35 +235,9 @@ def test_password(password):
 #MAIN LOOP
 #-------------------------------------------------------------------------------
 
-account_settings = load_account_settings()
-user = account_settings[0]
-host = account_settings[1]
-port = int(account_settings[2])
-
-program_settings = load_program_settings()
-debug = int(program_settings[0])
-maildir = program_settings[1]
-archdir = program_settings[2]
-update_frequency = int(program_settings[3])
-
-settings_display = [("User", user), ("Host", host), ("Port", port),
-("Debug messages", "on" if debug == 1 else "off"), ("Email directory", maildir),
-("Archive directory", archdir), ("Update frequency", update_frequency)]
-
-for i in settings_display:
-    print("{0:20}{1}".format(str(i[0]), str(i[1])))
+load_program_settings()
+load_account_settings()
+display_settings()
 
 while True:
-    password = get_password()
-    try:
-        test_password(password)
-        print("Password accepted.")
-        break
-    except smtplib.SMTPAuthenticationError:
-        print("Invalid password.")
-
-while True:
-    add_mail()
-    clear_old_mail()
-    check_schedule()
-    time.sleep(update_frequency)
+    main_menu()
